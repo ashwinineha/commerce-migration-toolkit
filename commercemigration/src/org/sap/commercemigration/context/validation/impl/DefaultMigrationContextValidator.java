@@ -9,7 +9,7 @@ import java.util.Locale;
 
 public class DefaultMigrationContextValidator implements MigrationContextValidator {
 
-    private static final String DB_URL_PROPERTY_KEY = "db.url";
+    private static final String DB_URL_PROPERTY_KEY = "migration.ds.target.db.url";
     private static final String DISABLE_UNLOCKING = "system.unlocking.disabled";
     private ConfigurationService configurationService;
 
