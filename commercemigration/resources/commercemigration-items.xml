@@ -21,6 +21,25 @@
     </collectiontypes>
 
     <itemtypes>
+        <itemtype code="MigrationCronJob" autocreate="true" generate="true" extends="CronJob"
+                  jaloclass="org.sap.commercemigration.cron.IncrementalMigrationCronJob">
+            <attributes>
+                <attribute qualifier="migrationItems" type="ReportingMigrationItemsList">
+                    <!-- since this is Collection(String) we MUST disable pre-fetching explicitly! -->
+                    <custom-properties>
+                        <property name="modelPrefetchMode">
+                            <value>java.lang.Boolean.FALSE</value>
+                        </property>
+                    </custom-properties>
+                    <persistence type="property"/>
+                    <modifiers optional="true"/>
+                </attribute>
+                <attribute qualifier="lastStartTime" type="java.util.Date">
+                    <modifiers read="true" write="true" initial="false" optional="true"/>
+                    <persistence type="property"/>
+                </attribute>
+            </attributes>
+        </itemtype>
         <itemtype code="IncrementalMigrationCronJob" autocreate="true" generate="true" extends="CronJob"
                   jaloclass="org.sap.commercemigration.cron.IncrementalMigrationCronJob">
             <attributes>

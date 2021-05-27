@@ -1,6 +1,5 @@
 package org.sap.commercemigration.context.impl;
 
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;

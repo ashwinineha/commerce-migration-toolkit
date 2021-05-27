@@ -8,6 +8,7 @@ import de.hybris.platform.cronjob.enums.CronJobStatus;
 import de.hybris.platform.cronjob.model.CronJobModel;
 import de.hybris.platform.servicelayer.cronjob.PerformResult;
 import org.apache.commons.collections4.CollectionUtils;
+import org.sap.commercemigration.MigrationStatus;
 import org.sap.commercemigration.model.cron.IncrementalMigrationCronJobModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
