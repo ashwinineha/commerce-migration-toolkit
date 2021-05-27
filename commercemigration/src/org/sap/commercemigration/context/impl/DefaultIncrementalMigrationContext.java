@@ -36,6 +36,18 @@ public class DefaultIncrementalMigrationContext extends DefaultMigrationContext 
     }
 
     @Override
+    public void setSchemaMigrationAutoTriggerEnabled(boolean autoTriggerEnabled) {
+        configuration.setProperty(CommercemigrationConstants.MIGRATION_SCHEMA_AUTOTRIGGER_ENABLED,
+                String.valueOf(autoTriggerEnabled));
+    }
+
+    @Override
+    public void setTruncateEnabled(boolean truncateEnabled) {
+        configuration.setProperty(CommercemigrationConstants.MIGRATION_DATA_TRUNCATE_ENABLED,
+                String.valueOf(truncateEnabled));
+    }
+
+    @Override
     public void setIncrementalMigrationTimestamp(Instant timeStampInstant) {
         this.timestampInstant = timeStampInstant;
     }
@@ -50,11 +62,6 @@ public class DefaultIncrementalMigrationContext extends DefaultMigrationContext 
     public Set<String> getIncrementalTables() {
         return CollectionUtils.isNotEmpty(this.incrementalTables) ?
                 this.incrementalTables : getListProperty(CommercemigrationConstants.MIGRATION_DATA_INCREMENTAL_TABLES);
-    }
-
-    @Override
-    public boolean isIncrementalModeEnabled() {
-        return getBooleanProperty(CommercemigrationConstants.MIGRATION_DATA_INCREMENTAL_ENABLED);
     }
 
     @Override

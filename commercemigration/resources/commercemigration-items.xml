@@ -22,9 +22,10 @@
 
     <itemtypes>
         <itemtype code="MigrationCronJob" autocreate="true" generate="true" extends="CronJob"
-                  jaloclass="org.sap.commercemigration.cron.IncrementalMigrationCronJob">
+                  jaloclass="org.sap.commercemigration.cron.MigrationCronJob">
             <attributes>
                 <attribute qualifier="migrationItems" type="ReportingMigrationItemsList">
+                    <description>List of table included for the migration</description>
                     <!-- since this is Collection(String) we MUST disable pre-fetching explicitly! -->
                     <custom-properties>
                         <property name="modelPrefetchMode">
@@ -34,45 +35,40 @@
                     <persistence type="property"/>
                     <modifiers optional="true"/>
                 </attribute>
-                <attribute qualifier="lastStartTime" type="java.util.Date">
-                    <modifiers read="true" write="true" initial="false" optional="true"/>
-                    <persistence type="property"/>
+                <attribute qualifier="schemaAutotrigger" type="boolean" autocreate="true" generate="true">
+                    <description>automatically trigger schema migrator before data copy process is started</description>
+                    <persistence type="property" />
+                    <modifiers optional="true"/>
+                    <defaultvalue>false</defaultvalue>
+                </attribute>
+                <attribute qualifier="truncateEnabled" type="boolean" autocreate="true" generate="true">
+                    <description>delete rows in target table before inserting new records</description>
+                    <persistence type="property" />
+                    <modifiers optional="true"/>
+                    <defaultvalue>false</defaultvalue>
                 </attribute>
             </attributes>
         </itemtype>
-        <itemtype code="IncrementalMigrationCronJob" autocreate="true" generate="true" extends="CronJob"
+        <itemtype code="IncrementalMigrationCronJob" autocreate="true" generate="true" extends="MigrationCronJob"
                   jaloclass="org.sap.commercemigration.cron.IncrementalMigrationCronJob">
+            <description>
+                Cronjob For Incremental Migration.
+            </description>
             <attributes>
-                <attribute qualifier="migrationItems" type="ReportingMigrationItemsList">
-                    <!-- since this is Collection(String) we MUST disable pre-fetching explicitly! -->
-                    <custom-properties>
-                        <property name="modelPrefetchMode">
-                            <value>java.lang.Boolean.FALSE</value>
-                        </property>
-                    </custom-properties>
-                    <persistence type="property"/>
-                    <modifiers optional="true"/>
-                </attribute>
                 <attribute qualifier="lastStartTime" type="java.util.Date">
-                    <modifiers read="true" write="true" initial="false" optional="true"/>
+                    <description>Last Executed Incremental migration Timestamp</description>
+                    <modifiers optional="true"/>
                     <persistence type="property"/>
                 </attribute>
             </attributes>
         </itemtype>
 
-        <itemtype code="FullMigrationCronJob" autocreate="true" generate="true" extends="CronJob"
-                  jaloclass="org.sap.commercemigration.cron.IncrementalMigrationCronJob">
+        <itemtype code="FullMigrationCronJob" autocreate="true" generate="true" extends="MigrationCronJob"
+                  jaloclass="org.sap.commercemigration.cron.FullMigrationCronJob">
+            <description>
+                Cronjob For full Migration.
+            </description>
             <attributes>
-                <attribute qualifier="migrationItems" type="ReportingMigrationItemsList">
-                    <!-- since this is Collection(String) we MUST disable pre-fetching explicitly! -->
-                    <custom-properties>
-                        <property name="modelPrefetchMode">
-                            <value>java.lang.Boolean.FALSE</value>
-                        </property>
-                    </custom-properties>
-                    <persistence type="property"/>
-                    <modifiers optional="true"/>
-                </attribute>
             </attributes>
         </itemtype>
     </itemtypes>

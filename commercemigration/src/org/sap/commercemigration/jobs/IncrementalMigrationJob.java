@@ -47,6 +47,8 @@ public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
 			if (CollectionUtils.isNotEmpty(incrementalMigrationCronJob.getMigrationItems())) {
 				incrementalMigrationContext.setIncrementalTables(incrementalMigrationCronJob.getMigrationItems());
 			}
+			this.incrementalMigrationContext.setTruncateEnabled(incrementalMigrationCronJob.isTruncateEnabled());
+			this.incrementalMigrationContext.setSchemaMigrationAutoTriggerEnabled(incrementalMigrationCronJob.isSchemaAutotrigger());
 			this.incrementalMigrationContext.setIncrementalModeEnabled(true);
 			this.currentMigrationId = databaseMigrationService.startMigration(incrementalMigrationContext);
 

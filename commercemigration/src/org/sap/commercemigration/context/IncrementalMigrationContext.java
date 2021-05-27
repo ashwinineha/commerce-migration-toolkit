@@ -10,6 +10,10 @@ public interface IncrementalMigrationContext extends MigrationContext {
 
     Instant getIncrementalMigrationTimestamp();
 
+    public void setSchemaMigrationAutoTriggerEnabled(final boolean autoTriggerEnabled);
+
+    public void setTruncateEnabled(final boolean truncateEnabled);
+
     void setIncrementalMigrationTimestamp(final Instant timeStampInstant);
 
     Set<String> setIncrementalTables(final Set<String> incrementalTables);

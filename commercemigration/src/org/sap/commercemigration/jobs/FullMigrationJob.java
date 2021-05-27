@@ -38,6 +38,8 @@ public class FullMigrationJob extends AbstractMigrationJobPerformable {
 			if (CollectionUtils.isNotEmpty(fullMigrationCronJobModel.getMigrationItems())) {
 				this.incrementalMigrationContext.setIncludedTables(fullMigrationCronJobModel.getMigrationItems());
 			}
+			this.incrementalMigrationContext.setTruncateEnabled(fullMigrationCronJobModel.isTruncateEnabled());
+			this.incrementalMigrationContext.setSchemaMigrationAutoTriggerEnabled(fullMigrationCronJobModel.isSchemaAutotrigger());
 			this.incrementalMigrationContext.setIncrementalModeEnabled(false);
 			this.currentMigrationId = databaseMigrationService.startMigration(this.incrementalMigrationContext);
 
