@@ -1,0 +1,22 @@
+
+INSERT_UPDATE ServicelayerJob;code[unique=true];springId[unique=true]
+;incrementalMigrationJob;incrementalMigrationJob
+;fullMigrationJob;fullMigrationJob
+
+# Update details for incremental migration
+INSERT_UPDATE IncrementalMigrationCronJob;code[unique=true];active;job(code)[default=incrementalMigrationJob];sessionLanguage(isoCode)[default=en]
+;incrementalMigrationJob;true;
+
+INSERT_UPDATE IncrementalMigrationCronJob;code[unique=true];migrationItems
+;incrementalMigrationJob;PAYMENTMODES,ADDRESSES,users,CAT2PRODREL,CONSIGNMENTS,ORDERS
+
+INSERT_UPDATE FullMigrationCronJob;code[unique=true];active;job(code)[default=fullMigrationJob];sessionLanguage(isoCode)[default=en];migrationItems
+;fullMigrationJob;true;
+
+INSERT_UPDATE FullMigrationCronJob;code[unique=true];migrationItems
+;fullMigrationJob;PAYMENTMODES,products
+
+INSERT_UPDATE Trigger;cronjob(code)[unique=true];cronExpression
+;incrementalMigrationJob; 0 0 0 * * ?
+;fullMigrationJob; 0 0 0 * * ?
+
