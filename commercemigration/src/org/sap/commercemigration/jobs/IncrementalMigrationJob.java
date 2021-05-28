@@ -23,8 +23,6 @@ public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(IncrementalMigrationJob.class);
 
-	private final String INCREMENTAL_MIGRATION_JOB_NAME = "incrementalMigrationJob";
-
 	@Override
 	public PerformResult perform(final CronJobModel cronJobModel) {
 		IncrementalMigrationCronJobModel incrementalMigrationCronJob;
@@ -41,8 +39,9 @@ public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
 
 			if (null != incrementalMigrationCronJob.getLastStartTime()) {
 				Instant timeStampInstant = incrementalMigrationCronJob.getLastStartTime().toInstant();
-				LOG.info("Here getIncrementalTimestamp(): " + timeStampInstant);
-				incrementalMigrationContext.setIncrementalMigrationTimestamp(timeStampInstant);
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("For {} IncrementalTimestamp : {}  ",incrementalMigrationCronJob.getCode(),timeStampInstant);
+				}				incrementalMigrationContext.setIncrementalMigrationTimestamp(timeStampInstant);
 			}
 			if (CollectionUtils.isNotEmpty(incrementalMigrationCronJob.getMigrationItems())) {
 				incrementalMigrationContext.setIncrementalTables(incrementalMigrationCronJob.getMigrationItems());

@@ -8,7 +8,12 @@ INSERT_UPDATE IncrementalMigrationCronJob;code[unique=true];active;job(code)[def
 ;incrementalMigrationJob;true;
 
 INSERT_UPDATE IncrementalMigrationCronJob;code[unique=true];migrationItems
+#% afterEach: impex.getLastImportedItem().setActivationTime(new Date()-10);
 ;incrementalMigrationJob;PAYMENTMODES,ADDRESSES,users,CAT2PRODREL,CONSIGNMENTS,ORDERS
+
+INSERT_UPDATE Trigger;cronjob(code)[unique=true];cronExpression
+#% afterEach: impex.getLastImportedItem().setLastStartTime(new Date());
+;incrementalMigrationJob; 0 0/1 * * * ?
 
 INSERT_UPDATE FullMigrationCronJob;code[unique=true];active;job(code)[default=fullMigrationJob];sessionLanguage(isoCode)[default=en]
 ;fullMigrationJob;true;
@@ -17,6 +22,6 @@ INSERT_UPDATE FullMigrationCronJob;code[unique=true];truncateEnabled;migrationIt
 ;fullMigrationJob;true;PAYMENTMODES,products
 
 INSERT_UPDATE Trigger;cronjob(code)[unique=true];cronExpression
-;incrementalMigrationJob; 0 0 0 * * ?
+#% afterEach: impex.getLastImportedItem().setActivationTime(new Date());
 ;fullMigrationJob; 0 0 0 * * ?
 

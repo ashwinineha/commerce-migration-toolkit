@@ -20,8 +20,6 @@ public class FullMigrationJob extends AbstractMigrationJobPerformable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(IncrementalMigrationJob.class);
 
-	private final String FULL_MIGRATION_JOB_NAME = "fullMigrationJob";
-
 	@Override
 	public PerformResult perform(final CronJobModel cronJobModel) {
 		FullMigrationCronJobModel fullMigrationCronJobModel;
