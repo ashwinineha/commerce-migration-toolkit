@@ -10,7 +10,7 @@ import org.sap.commercemigration.profile.DataSourceConfiguration;
 public class DefaultDataSourceConfiguration implements DataSourceConfiguration {
 
     private String profile;
-
+    private Configuration configuration;
     private String driver;
     private String connectionString;
     private String userName;
@@ -27,6 +27,7 @@ public class DefaultDataSourceConfiguration implements DataSourceConfiguration {
 
     public DefaultDataSourceConfiguration(Configuration configuration, String profile) {
         this.profile = profile;
+        this.configuration = configuration;
         this.load(configuration, profile);
     }
 
@@ -62,11 +63,13 @@ public class DefaultDataSourceConfiguration implements DataSourceConfiguration {
 
     @Override
     public String getTypeSystemName() {
+        this.typeSystemName = getProfileProperty(profile, configuration, "db.typesystemname");
         return typeSystemName;
     }
 
     @Override
     public String getTypeSystemSuffix() {
+        this.typeSystemSuffix = getProfileProperty(profile, configuration, "db.typesystemsuffix");
         return typeSystemSuffix;
     }
 

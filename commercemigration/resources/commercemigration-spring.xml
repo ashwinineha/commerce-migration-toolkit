@@ -81,6 +81,7 @@
         <property name="incrementalMigrationContext" ref="incrementalMigrationContext"/>
         <property name="databaseMigrationService" ref="databaseMigrationService"/>
         <property name="cronJobService" ref="cronJobService"/>
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
     </bean>
 
     <bean id="incrementalMigrationJob" class="org.sap.commercemigration.jobs.IncrementalMigrationJob"
