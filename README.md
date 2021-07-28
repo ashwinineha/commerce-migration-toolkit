@@ -70,7 +70,7 @@ The implementation of this tool is based on regular SAP Commerce extensions. Add
 
 # Demo Video
 
-  https://video.sap.com/media/t/1_gxduwrl3
+  https://sapvideoa35699dc5.hana.ondemand.com/?entry_id=1_gxduwrl3
 
 # Get the Code and Upgradability
 
@@ -104,6 +104,8 @@ To upgrade make sure your submodule points to the desired release / commit.
 This repository is provided "as-is"; no support is available.
 
 Find more information about SAP Commerce Cloud Setup on our [help site](https://help.sap.com/viewer/product/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/LATEST/en-US).
+
+With regards CMT, access to the database for customers is and will not be possible in the future and SAP does not provide any additional support on CMT in particular. Support can be bought as paid engagement from SAP Consulting only.
 
 # License
 Copyright (c) 2021 SAP SE or an SAP affiliate company. All rights reserved. This project is licensed under the Apache Software License, version 2.0 except as noted otherwise in the [LICENSE file](LICENSES/Apache-2.0.txt).
