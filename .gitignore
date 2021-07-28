@@ -1,0 +1,46 @@
+# Compiled sources #
+####################
+classes
+testclasses
+gensrc
+eclipsebin
+
+# Libraries #
+lib
+web/webroot/WEB-INF/lib
+
+# Docs and sources #
+####################
+doc
+javadoc
+sources
+
+# Generated files #
+###################
+hmc
+build.xml
+platformhome.properties
+extensioninfo.xsd
+beans.xsd
+items.xsd
+hmc.xsd
+*-testclasses.xml
+*-webtestclasses.xml
+*-hactestclasses.xml
+ruleset.xml
+**/resources/*.build.number
+
+# IDE #
+#######
+*.iml
+.project
+.settings
+*.xml~
+.metadata/
+.idea
+
+# Gradle #
+##########
+build
+.gradle
+
