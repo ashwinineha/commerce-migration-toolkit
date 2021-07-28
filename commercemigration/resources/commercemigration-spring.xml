@@ -64,38 +64,9 @@
         <constructor-arg name="configuration" value="#{configurationService.getConfiguration()}"/>
     </bean>
 
-    <alias name="incrementalMigrationContext" alias="migrationContext"/>
-    <alias name="defaultIncrementalMigrationContext" alias="incrementalMigrationContext"/>
-    <bean name="defaultIncrementalMigrationContext"
-          class="org.sap.commercemigration.context.impl.DefaultIncrementalMigrationContext"
-          parent="defaultMigrationContext">
-        <constructor-arg name="sourceDataSourceConfiguration" ref="sourceDataSourceConfiguration"/>
-        <constructor-arg name="targetDataSourceConfiguration" ref="targetDataSourceConfiguration"/>
-        <constructor-arg name="dataRepositoryFactory" ref="dataRepositoryFactory"/>
-        <constructor-arg name="configuration" value="#{configurationService.getConfiguration()}"/>
-    </bean>
-
-    <!-- All migration job can inherit  -->
-    <bean id="abstractMigrationJobPerformable" class="org.sap.commercemigration.jobs.AbstractMigrationJobPerformable"
-          abstract="true" parent="abstractJobPerformable">
-        <property name="incrementalMigrationContext" ref="incrementalMigrationContext"/>
-        <property name="databaseMigrationService" ref="databaseMigrationService"/>
-        <property name="cronJobService" ref="cronJobService"/>
-        <property name="jdbcTemplate" ref="jdbcTemplate"/>
-    </bean>
-
-    <bean id="incrementalMigrationJob" class="org.sap.commercemigration.jobs.IncrementalMigrationJob"
-          parent="abstractMigrationJobPerformable">
-    </bean>
-
-    <bean id="fullMigrationJob" class="org.sap.commercemigration.jobs.FullMigrationJob"
-          parent="abstractMigrationJobPerformable">
-    </bean>
-
     <alias name="defaultMigrationContextValidator" alias="migrationContextValidator"/>
-    <bean name="defaultMigrationContextValidator"
-          class="org.sap.commercemigration.context.validation.impl.DefaultMigrationContextValidator">
-        <property name="configurationService" ref="configurationService"/>
+    <bean name="defaultMigrationContextValidator" class="org.sap.commercemigration.context.validation.impl.DefaultMigrationContextValidator">
+        <property name="configurationService" ref="configurationService" />
     </bean>
 
     <alias name="defaultDataRepositoryFactory" alias="dataRepositoryFactory"/>

@@ -1,0 +1,11 @@
+#Ant properties
+#Fri May 07 15:32:31 CEST 2021
+version.api=1905
+vendor=hybris
+group.id=de.hybris.platform
+name=commercereporting
+description=commercereporting
+builddate=20210507 1532
+releasedate=20190628 1509
+version=1905.28
+module.name=platform-module

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+  <alias name="incrementalMigrationContext" alias="migrationContext"/>
+  <alias name="defaultIncrementalMigrationContext" alias="incrementalMigrationContext"/>
+  <bean name="defaultIncrementalMigrationContext"
+    class="org.sap.commercemigration.context.impl.DefaultIncrementalMigrationContext"
+    parent="defaultMigrationContext">
+    <constructor-arg name="sourceDataSourceConfiguration" ref="sourceDataSourceConfiguration"/>
+    <constructor-arg name="targetDataSourceConfiguration" ref="targetDataSourceConfiguration"/>
+    <constructor-arg name="dataRepositoryFactory" ref="dataRepositoryFactory"/>
+    <constructor-arg name="configuration" value="#{configurationService.getConfiguration()}"/>
+  </bean>
+
+  <!-- All migration job can inherit  -->
+  <bean id="abstractMigrationJobPerformable" class="org.sap.commercemigration.jobs.AbstractMigrationJobPerformable"
+    abstract="true" parent="abstractJobPerformable">
+    <property name="incrementalMigrationContext" ref="incrementalMigrationContext"/>
+    <property name="databaseMigrationService" ref="databaseMigrationService"/>
+    <property name="cronJobService" ref="cronJobService"/>
+    <property name="jdbcTemplate" ref="jdbcTemplate"/>
+  </bean>
+
+  <bean id="incrementalMigrationJob" class="org.sap.commercemigration.jobs.IncrementalMigrationJob"
+    parent="abstractMigrationJobPerformable">
+  </bean>
+
+  <bean id="fullMigrationJob" class="org.sap.commercemigration.jobs.FullMigrationJob"
+    parent="abstractMigrationJobPerformable">
+  </bean>
+
+			
+</beans>

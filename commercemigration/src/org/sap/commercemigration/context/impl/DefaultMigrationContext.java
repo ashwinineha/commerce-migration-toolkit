@@ -12,14 +12,21 @@ import org.sap.commercemigration.repository.impl.DataRepositoryFactory;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class DefaultMigrationContext implements MigrationContext {
     private final DataRepository dataSourceRepository;
     private final DataRepository dataTargetRepository;
 
-    public final Configuration configuration;
+    protected final Configuration configuration;
 
     public DefaultMigrationContext(final DataSourceConfiguration sourceDataSourceConfiguration,
                                    final DataSourceConfiguration targetDataSourceConfiguration,

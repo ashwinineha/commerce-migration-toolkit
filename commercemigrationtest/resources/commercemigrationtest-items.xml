@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+ [y] hybris Platform
+
+ Copyright (c) 2018 SAP SE or an SAP affiliate company. All rights reserved.
+
+ This software is the confidential and proprietary information of SAP
+ ("Confidential Information"). You shall not disclose such Confidential
+ Information and shall use it only in accordance with the terms of the
+ license agreement you entered into with SAP.
+-->
+<!--
+	ATTENTION: This is just an example file. You have to edit it according to your needs.
+-->
+
+<items xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="items.xsd">
+
+    <itemtypes>
+        <itemtype generate="true"
+                  code="MyCustomItem"
+                  autocreate="true">
+            <deployment table="MyCustomItem" typecode="29999"/>
+            <attributes>
+                <attribute qualifier="stringField" type="java.lang.String">
+                    <description>String value</description>
+                    <persistence type="property"/>
+                </attribute>
+                <attribute qualifier="pStringField" type="java.lang.String">
+                    <description>Abbreviated String Field value</description>
+                    <persistence type="property">
+                        <columntype>
+                            <value>String</value>
+                        </columntype>
+                    </persistence>
+                </attribute>
+                <attribute qualifier="floatField" type="java.lang.Float">
+                    <description>Float value</description>
+                    <persistence type="property"/>
+                </attribute>
+
+                <attribute qualifier="doubleField" type="java.lang.Double">
+                    <description>Double value</description>
+                    <persistence type="property"/>
+                </attribute>
+
+                <attribute qualifier="byteField" type="java.lang.Byte">
+                    <description>Byte value</description>
+                    <persistence type="property"/>
+                </attribute>
+
+                <attribute qualifier="characterField" type="java.lang.Character">
+                    <description>Character value</description>
+                    <persistence type="property"/>
+                </attribute>
+
+                <attribute qualifier="shortField" type="java.lang.Short">
+                    <description>Short value</description>
+                    <persistence type="property"/>
+                </attribute>
+
+                <attribute qualifier="booleanField" type="java.lang.Boolean">
+                    <description>Boolean value</description>
+                    <persistence type="property"/>
+                </attribute>
+
+                <attribute qualifier="longField" type="java.lang.Long">
+                    <description>Long value</description>
+                    <persistence type="property"/>
+                </attribute>
+
+                <attribute qualifier="integerField" type="java.lang.Integer">
+                    <description>Integer value</description>
+                    <persistence type="property"/>
+                </attribute>
+
+                <attribute qualifier="pFloatField" type="float">
+                    <description>primitive float value</description>
+                    <persistence type="property"/>
+                </attribute>
+
+                <attribute qualifier="pDoubleField" type="double">
+                    <description>primitive double value</description>
+                    <persistence type="property"/>
+                </attribute>
+
+                <attribute qualifier="pByteField" type="byte">
+                    <description>primitive byte value</description>
+                    <persistence type="property"/>
+                </attribute>
+                <attribute qualifier="pCharField" type="char">
+                    <description>primitive char value</description>
+                    <persistence type="property"/>
+                </attribute>
+                <attribute qualifier="pShortField" type="short">
+                    <description>primitive short value</description>
+                    <persistence type="property"/>
+                </attribute>
+                <attribute qualifier="pBooleanField" type="boolean">
+                    <description>primitive boolean value</description>
+                    <persistence type="property"/>
+                </attribute>
+                <attribute qualifier="pLongField" type="long">
+                    <description>primitive long value</description>
+                    <persistence type="property"/>
+                </attribute>
+                <attribute qualifier="pIntField" type="int">
+                    <description>primitive integer value</description>
+                    <persistence type="property"/>
+                </attribute>
+                <attribute qualifier="dateField" type="java.util.Date">
+                    <description>Date value</description>
+                    <persistence type="property"/>
+                </attribute>
+                <attribute qualifier="bigDecimalField" type="java.math.BigDecimal">
+                    <description>Big decimal value</description>
+                    <persistence type="property"/>
+                </attribute>
+
+                <attribute qualifier="serializableField" type="java.lang.Object">
+                    <description>Serializable value</description>
+                    <persistence type="property">
+                        <columntype>
+                            <value>java.io.Serializable</value>
+                        </columntype>
+                    </persistence>
+                </attribute>
+                <attribute qualifier="longStringField" type="java.lang.String">
+                    <description>long string value</description>
+                    <persistence type="property">
+                        <columntype>
+                            <value>HYBRIS.LONG_STRING</value>
+                        </columntype>
+                    </persistence>
+                </attribute>
+                <attribute qualifier="jsonField" type="java.lang.String">
+                    <description>json value</description>
+                    <persistence type="property">
+                        <columntype>
+                            <value>HYBRIS.JSON</value>
+                        </columntype>
+                    </persistence>
+                </attribute>
+                <attribute qualifier="commaSeparatedPksField" type="java.lang.String">
+                    <description>Comma separated PKs value</description>
+                    <persistence type="property">
+                        <columntype>
+                            <value>HYBRIS.COMMA_SEPARATED_PKS</value>
+                        </columntype>
+                    </persistence>
+                </attribute>
+                <attribute qualifier="pkField" type="java.lang.String">
+                    <description>Pk field value</description>
+                    <persistence type="property">
+                        <columntype>
+                            <value>HYBRIS.PK</value>
+                        </columntype>
+                    </persistence>
+                </attribute>
+                <attribute qualifier="customDecimalField" type="float">
+                    <description>Custom float field value</description>
+                    <persistence type="property">
+                        <columntype database="sap">
+                            <value>decimal(12,3) DEFAULT 0</value>
+                        </columntype>
+                        <columntype database="oracle">
+                            <value>number(12,3) DEFAULT 0</value>
+                        </columntype>
+                        <columntype database="mysql">
+                            <value>decimal(12,3) DEFAULT 0</value>
+                        </columntype>
+                        <columntype database="sqlserver">
+                            <value>decimal(12,3) default 0</value>
+                        </columntype>
+                    </persistence>
+                </attribute>
+                <attribute qualifier="customVarBinary1000Field" type="java.lang.Object">
+                    <description>Custom float field value</description>
+                    <persistence type="property">
+                        <columntype database="sap">
+                            <value>varbinary(1000)</value>
+                        </columntype>
+                        <columntype database="oracle">
+                            <value>raw(1000)</value>
+                        </columntype>
+                        <columntype database="mysql">
+                            <value>varbinary(1000)</value>
+                        </columntype>
+                        <columntype database="sqlserver">
+                            <value>varbinary(1000)</value>
+                        </columntype>
+                    </persistence>
+                </attribute>
+                <attribute qualifier="customNvarchar2000Field" type="java.lang.String">
+                    <description>Custom float field value</description>
+                    <persistence type="property">
+                        <columntype database="sap">
+                            <value>nvarchar(2000)</value>
+                        </columntype>
+                        <columntype database="oracle">
+                            <value>nvarchar2(2000)</value>
+                        </columntype>
+                        <columntype database="mysql">
+                            <value>nvarchar(2000)</value>
+                        </columntype>
+                        <columntype database="sqlserver">
+                            <value>nvarchar(2000)</value>
+                        </columntype>
+                    </persistence>
+                </attribute>
+            </attributes>
+        </itemtype>
+    </itemtypes>
+</items>

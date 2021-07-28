@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+ Copyright (c) 2020 SAP SE or an SAP affiliate company. All rights reserved.
+-->
+<extensioninfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="extensioninfo.xsd">
+
+
+  <extension abstractclassprefix="Generated" classprefix="Commercereporting" jaloLogicFree="true"
+    managername="CommercereportingManager"
+    managersuperclass="de.hybris.platform.jalo.extension.Extension" name="commercereporting"
+    usemaven="false">
+
+    <requires-extension name="commercemigration"/>
+    <coremodule generated="true" manager="org.sap.commercemigration.jalo.CommercereportingManager"
+      packageroot="org.sap.commercemigration"/>
+
+  </extension>
+</extensioninfo>

@@ -1,6 +1,6 @@
 # Commerce Migration Toolkit
 
-[![REUSE status](https://api.reuse.software/badge/github.com/SAP-samples/commerce-migration-toolkit)](https://api.reuse.software/info/github.com/SAP-samples/commerce-migration-toolkit)
+[![Build Status](https://gkesapcxceop.jaas-gcp.cloud.sap.corp/buildStatus/icon?job=cloud-move-programs%2Fcommerce-migration-toolkit%2Fmaster)](https://gkesapcxceop.jaas-gcp.cloud.sap.corp/blue/organizations/jenkins/cloud-move-programs%2Fi2i-migration-ccv2-sample-project/activity?branch=master)
 
 The Commerce Migration Toolkit is a `self-service tool` that allows `SAP Customers / Partners` to migrate a `SAP Commerce on-premise installation to SAP Commerce Cloud (ccv2)`.
 
@@ -97,8 +97,7 @@ Use git submodule and point to this repository. For more information refer to:
 https://git-scm.com/docs/git-submodule
 
 SAP Commerce Cloud supports git submodule and allows you to fetch the repository upon build time, so there is no need to copy the extensions to your own repository.
-To upgrade make sure your submodule points to the desired release / commit
-
+To upgrade make sure your submodule points to the desired release / commit.
 
 # How to Obtain Support
 
@@ -108,4 +107,3 @@ Find more information about SAP Commerce Cloud Setup on our [help site](https://
 
 # License
 Copyright (c) 2021 SAP SE or an SAP affiliate company. All rights reserved. This project is licensed under the Apache Software License, version 2.0 except as noted otherwise in the [LICENSE file](LICENSES/Apache-2.0.txt).
-
