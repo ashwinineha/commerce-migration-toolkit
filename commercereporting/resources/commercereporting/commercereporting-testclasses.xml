@@ -1,1 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?><testclasses><commercereporting><testclass>org.sap.commercemigration.jalo.CommercereportingTest</testclass><testclass>org.sap.commercemigration.service.impl.DefaultCommercereportingServiceIntegrationTest</testclass></commercereporting></testclasses>
