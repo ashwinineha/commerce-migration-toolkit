@@ -81,4 +81,6 @@ public interface MigrationContext {
     String getMigrationReportConnectionString();
 
     int getMaxTargetStagedMigrations();
+
+    boolean isDeletionEnabled();
 }

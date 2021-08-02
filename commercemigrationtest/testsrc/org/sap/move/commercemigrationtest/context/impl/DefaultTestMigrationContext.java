@@ -363,6 +363,11 @@ public class DefaultTestMigrationContext implements TestMigrationContext {
         return maxTargetStagedMigrations;
     }
 
+    @Override
+    public boolean isDeletionEnabled() {
+        return false;
+    }
+
     public void setMaxTargetStagedMigrations(int maxTargetStagedMigrations) {
         this.maxTargetStagedMigrations = maxTargetStagedMigrations;
     }

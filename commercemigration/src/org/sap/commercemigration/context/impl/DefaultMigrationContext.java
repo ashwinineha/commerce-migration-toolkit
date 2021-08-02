@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 public class DefaultMigrationContext implements MigrationContext {
     private final DataRepository dataSourceRepository;
     private final DataRepository dataTargetRepository;
+    protected boolean deletionEnabled;
 
     protected final Configuration configuration;
 
@@ -226,6 +227,11 @@ public class DefaultMigrationContext implements MigrationContext {
     }
 
     @Override
+    public boolean isDeletionEnabled() {
+        return this.deletionEnabled;
+    }
+
+    @Override
     public int getStalledTimeout() {
         return getNumericProperty(CommercemigrationConstants.MIGRATION_STALLED_TIMEOUT);
     }
@@ -280,5 +286,4 @@ public class DefaultMigrationContext implements MigrationContext {
         }
         return map;
     }
-
 }

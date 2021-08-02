@@ -1,11 +1,18 @@
 package org.sap.commercemigration.strategy.impl;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.microsoft.sqlserver.jdbc.SQLServerBulkCopy;
 import com.microsoft.sqlserver.jdbc.SQLServerBulkCopyOptions;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
+import de.hybris.platform.util.Config;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.sap.commercemigration.concurrent.DataPipe;
 import org.sap.commercemigration.concurrent.DataWorkerExecutor;
 import org.sap.commercemigration.concurrent.DataWorkerPoolFactory;
@@ -270,6 +277,21 @@ public class CopyPipeWriterStrategy implements PipeWriterStrategy<DataSet> {
         return sqlBuilder.toString();
     }
 
+    private String getBulkDeleteStatement(String targetTableName, List<String> columnsToCopy, String columnId) {
+        /*
+         * https://michaeljswart.com/2017/07/sql-server-upsert-patterns-and-antipatterns/
+         * We are not using a stored procedure here as CCv2 does not grant sp exec permission to the default db user
+         */
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append(String.format("MERGE %s WITH (HOLDLOCK) AS t", targetTableName));
+        sqlBuilder.append("\n");
+        sqlBuilder.append(String.format("USING (SELECT %s) AS s ON t.%s = s.%s", Joiner.on(',').join(columnsToCopy.stream().map(column -> "? " + column).collect(Collectors.toList())), columnId, columnId));
+        sqlBuilder.append("\n");
+        sqlBuilder.append("WHEN MATCHED THEN DELETE"); //DELETE
+        sqlBuilder.append(";");
+        return sqlBuilder.toString();
+    }
+
     private boolean requiresIdentityInsert(String targetTableName, Connection targetConnection) {
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append("SELECT \n");
@@ -384,7 +406,12 @@ public class CopyPipeWriterStrategy implements PipeWriterStrategy<DataSet> {
         protected Boolean internalRun() {
             try {
                 if (!ctx.getDataSet().getAllResults().isEmpty()) {
-                    process();
+                    if(ctx.getContext().getMigrationContext().isDeletionEnabled()){
+                        deleteProcess();
+                    }
+                    else{
+                        process();
+                    }
                 }
                 return Boolean.TRUE;
             } catch (Exception e) {
@@ -439,6 +466,98 @@ public class CopyPipeWriterStrategy implements PipeWriterStrategy<DataSet> {
                     long totalCount = ctx.getTotalCount().addAndGet(batchCount);
                     updateProgress(ctx.getContext(), ctx.getCopyItem(), totalCount);
                 }
+            } catch (Exception e) {
+                if (connection != null) {
+                    connection.rollback();
+                }
+                throw e;
+            } finally {
+                if (connection != null && originalAutoCommit != null) {
+                    connection.setAutoCommit(originalAutoCommit);
+                }
+                if (connection != null && ctx != null) {
+                    if (requiresIdentityInsert) {
+                        switchIdentityInsert(connection, ctx.getCopyItem().getTargetItem(), false);
+                    }
+                    connection.close();
+                }
+            }
+        }
+
+        private List<String> getListColumn() {
+            final String columns = "PK";
+            if (StringUtils.isEmpty(columns)) {
+                return Collections.emptyList();
+            }
+            List<String> result = Splitter.on(",")
+                .omitEmptyStrings()
+                .trimResults()
+                .splitToList(columns);
+
+            return result;
+        }
+
+        // It will be executed during deelte process
+        private void deleteProcess() throws Exception {
+            Connection connection = null;
+            Boolean originalAutoCommit = null;
+            String p_table = "p_table";
+            String PK = "PK";
+            String p_itempk = "p_itempk";
+            List<Long> pkList;
+            boolean requiresIdentityInsert = ctx.isRequiresIdentityInsert();
+
+            Map<String, List<Long>> deleteTablePKList = new HashMap<String, List<Long>>();
+
+            for (List<Object> row : ctx.getDataSet().getAllResults()) {
+                String tableName = (String) ctx.getDataSet()
+                    .getColumnValue(p_table, row);
+
+                if (deleteTablePKList.containsKey(tableName)) {
+                    pkList = deleteTablePKList.get(tableName);
+                    Long pkValue = (Long) ctx.getDataSet()
+                        .getColumnValue(p_itempk, row);
+                    pkList.add(pkValue);
+                    deleteTablePKList.put(tableName, pkList);
+                } else {
+                    pkList = new ArrayList<Long>();
+                    Long pkValue = (Long) ctx.getDataSet()
+                        .getColumnValue(p_itempk, row);
+                    pkList.add(pkValue);
+                    deleteTablePKList.put(tableName, pkList);
+                }
+                LOG.info(deleteTablePKList.toString());
+            }
+            try {
+
+                connection = ctx.getContext().getMigrationContext().getDataTargetRepository()
+                    .getConnection();
+                originalAutoCommit = connection.getAutoCommit();
+
+                for (Map.Entry<String, List<Long>> entry : deleteTablePKList.entrySet()) {
+                    String targetTableName = entry.getKey();
+
+                try (PreparedStatement bulkWriterStatement = connection.prepareStatement(
+                    getBulkDeleteStatement(targetTableName, getListColumn(), PK));
+                ) {
+                    connection.setAutoCommit(false);
+                    for (Long pkValue : entry.getValue()) {
+                        int paramIdx = 1;
+                            bulkWriterStatement.setObject(paramIdx, pkValue);
+
+                            paramIdx += 1;
+                            bulkWriterStatement.addBatch();
+                    }
+                    int batchCount = ctx.getDataSet().getAllResults().size();
+                    executeBatch(ctx.getCopyItem(), bulkWriterStatement, batchCount,
+                        ctx.getPerformanceRecorder());
+                    bulkWriterStatement.clearParameters();
+                    bulkWriterStatement.clearBatch();
+                    connection.commit();
+                    long totalCount = ctx.getTotalCount().addAndGet(batchCount);
+                    updateProgress(ctx.getContext(), ctx.getCopyItem(), totalCount);
+                }
+            }
             } catch (Exception e) {
                 if (connection != null) {
                     connection.rollback();

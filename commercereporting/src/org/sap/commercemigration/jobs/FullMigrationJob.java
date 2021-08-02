@@ -39,7 +39,7 @@ public class FullMigrationJob extends AbstractMigrationJobPerformable {
             .setIncludedTables(fullMigrationCronJobModel.getMigrationItems());
         updateTypesystemTable(fullMigrationCronJobModel.getMigrationItems());
       }
-
+      incrementalMigrationContext.setDeletionEnabled(false);
       this.incrementalMigrationContext
           .setTruncateEnabled(fullMigrationCronJobModel.isTruncateEnabled());
       this.incrementalMigrationContext

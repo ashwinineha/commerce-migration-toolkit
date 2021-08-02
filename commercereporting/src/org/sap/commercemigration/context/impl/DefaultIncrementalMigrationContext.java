@@ -100,6 +100,11 @@ public class DefaultIncrementalMigrationContext extends DefaultMigrationContext 
         this.includedTables = includedTables;
     }
 
+    @Override
+    public void setDeletionEnabled(boolean deletionEnabled) {
+        this.deletionEnabled = deletionEnabled;
+    }
+
     private Set<String> getListProperty(final String key) {
         final String tables = super.configuration.getString(key);
 

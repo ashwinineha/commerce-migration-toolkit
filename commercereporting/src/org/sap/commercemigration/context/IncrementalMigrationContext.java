@@ -21,4 +21,6 @@ public interface IncrementalMigrationContext extends MigrationContext {
     void setIncrementalModeEnabled(final boolean incrementalModeEnabled);
 
     void setIncludedTables(final Set<String> includedTables);
+
+    public void setDeletionEnabled(boolean deletionEnabled);
 }

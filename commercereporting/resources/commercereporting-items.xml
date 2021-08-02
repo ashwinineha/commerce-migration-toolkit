@@ -12,6 +12,13 @@
 		<collectiontype code="ReportingMigrationItemsList" elementtype="java.lang.String" autocreate="true"
 			generate="true" type="set"/>
 	</collectiontypes>
+	<enumtypes>
+		<enumtype code="ItemChangeType">
+			<value code="NEW"/>
+			<value code="DELETED"/>
+			<value code="MODIFIED"/>
+		</enumtype>
+	</enumtypes>
 
 	<itemtypes>
 		<itemtype code="MigrationCronJob" autocreate="true" generate="true" extends="CronJob"
@@ -64,5 +71,33 @@
 			<attributes>
 			</attributes>
 		</itemtype>
+
+		<itemtype generate="true"
+			code="ItemDeletionMarker"
+			jaloclass="org.sap.commercemigration.jalo.ItemDeletionMarker"
+			autocreate="true">
+			<deployment table="itemdeletionmarkers" typecode="30300"/>
+			<attributes>
+				<attribute qualifier="itemPK" type="java.lang.Long">
+					<persistence type="property"/>
+					<modifiers optional="false" write="false" initial="true"/>
+				</attribute>
+				<attribute qualifier="table" type="java.lang.String">
+					<persistence type="property"/>
+					<modifiers optional="false"  write="false" initial="true"/>
+				</attribute>
+				<attribute qualifier="changeType" type="ItemChangeType">
+					<persistence type="property"/>
+					<modifiers optional="false"/>
+				</attribute>
+			</attributes>
+			<indexes>
+				<index name="ItemDeletionIDX" unique="true">
+					<key attribute="itemPK" />
+					<key attribute="table" />
+				</index>
+			</indexes>
+		</itemtype>
+
 	</itemtypes>
 </items>

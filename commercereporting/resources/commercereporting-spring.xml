@@ -38,5 +38,16 @@
     parent="abstractMigrationJobPerformable">
   </bean>
 
+  <bean id="defaultCMTRemoveInterceptor"
+    class="org.sap.commercemigration.interceptors.DefaultCMTRemoveInterceptor">
+    <property name="typeService" ref="typeService" />
+    <property name="modelService" ref="modelService" />
+  </bean>
+
+  <bean id="defaultCMTRemoveInterceptorMapping"
+    class="de.hybris.platform.servicelayer.interceptor.impl.InterceptorMapping">
+    <property name="interceptor" ref="defaultCMTRemoveInterceptor"/>
+    <property name="typeCode" value="Item" />
+  </bean>
 			
 </beans>

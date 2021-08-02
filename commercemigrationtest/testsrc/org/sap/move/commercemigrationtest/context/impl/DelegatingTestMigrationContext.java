@@ -317,6 +317,11 @@ public class DelegatingTestMigrationContext implements TestMigrationContext {
     }
 
     @Override
+    public boolean isDeletionEnabled() {
+        return false;
+    }
+
+    @Override
     public void setMaxTargetStagedMigrations(int maxTargetStagedMigrations) {
         context.setMaxTargetStagedMigrations(maxTargetStagedMigrations);
     }
