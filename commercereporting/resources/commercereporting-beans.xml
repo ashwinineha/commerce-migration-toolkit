@@ -7,6 +7,19 @@
 -->
 
 <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="beans.xsd">
+  <bean class="org.sap.commercemigration.SeekQueryDefinition">
+    <property name="deletionEnabled" type="boolean" />
+  </bean>
+  <bean class="org.sap.commercemigration.OffsetQueryDefinition">
+    <property name="deletionEnabled" type="boolean" />
+  </bean>
 
+  <bean class="org.sap.commercemigration.MarkersQueryDefinition">
+    <property name="deletionEnabled" type="boolean" />
+  </bean>
+
+  <bean class="org.sap.commercemigration.MigrationStatus">
+    <property name="deletionEnabled" type="boolean" />
+  </bean>
 
 </beans>

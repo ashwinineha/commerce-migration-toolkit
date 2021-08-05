@@ -49,5 +49,11 @@
     <property name="interceptor" ref="defaultCMTRemoveInterceptor"/>
     <property name="typeCode" value="Item" />
   </bean>
+
+  <alias name="defaultDataRepositoryFactory" alias="dataRepositoryFactory"/>
+  <bean name="defaultDataRepositoryFactory"
+    class="org.sap.commercemigration.repository.impl.DataIncrementalRepositoryFactory">
+    <constructor-arg ref="databaseMigrationDataTypeMapperService"/>
+  </bean>
 			
 </beans>

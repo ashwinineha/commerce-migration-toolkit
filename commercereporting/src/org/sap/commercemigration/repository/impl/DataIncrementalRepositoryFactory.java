@@ -5,12 +5,10 @@ import org.sap.commercemigration.profile.DataSourceConfiguration;
 import org.sap.commercemigration.repository.DataRepository;
 import org.sap.commercemigration.service.DatabaseMigrationDataTypeMapperService;
 
-public class DataRepositoryFactory {
+public class DataIncrementalRepositoryFactory extends DataRepositoryFactory {
 
-    protected final DatabaseMigrationDataTypeMapperService databaseMigrationDataTypeMapperService;
-
-    public DataRepositoryFactory(DatabaseMigrationDataTypeMapperService databaseMigrationDataTypeMapperService) {
-        this.databaseMigrationDataTypeMapperService = databaseMigrationDataTypeMapperService;
+    public DataIncrementalRepositoryFactory(DatabaseMigrationDataTypeMapperService databaseMigrationDataTypeMapperService) {
+        super(databaseMigrationDataTypeMapperService);
     }
 
     public DataRepository create(DataSourceConfiguration dataSourceConfiguration)
@@ -23,7 +21,7 @@ public class DataRepositoryFactory {
             if (connectionStringLower.startsWith("jdbc:mysql")) {
                 return new MySQLDataRepository(dataSourceConfiguration, databaseMigrationDataTypeMapperService);
             } else if (connectionStringLower.startsWith("jdbc:sqlserver")) {
-                return new AzureDataRepository(dataSourceConfiguration, databaseMigrationDataTypeMapperService);
+                return new AzureIncrementalDataRepository(dataSourceConfiguration, databaseMigrationDataTypeMapperService);
             } else if (connectionStringLower.startsWith("jdbc:oracle")) {
                 return new OracleDataRepository(dataSourceConfiguration, databaseMigrationDataTypeMapperService);
             } else if (connectionStringLower.startsWith("jdbc:sap")) {

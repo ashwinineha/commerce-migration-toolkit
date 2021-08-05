@@ -96,6 +96,11 @@
 					<key attribute="itemPK" />
 					<key attribute="table" />
 				</index>
+				<index name="ModifiedtimeIDX" unique="false">
+					<key attribute="modifiedtime" />
+					<key attribute="table" />
+				</index>
+
 			</indexes>
 		</itemtype>
 

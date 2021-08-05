@@ -1,5 +1,7 @@
 # CMT - Azure Database Sync
 
+
+
 It allows you to synchronize the data you select single-directionally (from CCV2) across multiple MS databases, both on-premises and in the cloud.
 It has the following properties:
 
@@ -49,6 +51,22 @@ The following limitations should be considered when implementing CMT for data sy
    * This should be acceptable for reporting or analytics, should be take into consideration for the application using the destination DB)
 * Sync of master data (tables without last modified timestamp) may be delayed (e.g. 24 hours)
 * Performance should be tested to tune batch size and number threads (memory and CPU on the application server)
+
+## [Deletion Support](./SUPPORT-DELETE-GUIDE.md) 
+
+
+## Quick Start
+
+To install the Commerce Migration Toolkit, follow these steps:
+
+Add the following extensions to your localextensions.xml:
+```
+<extension name="commercereporting"/>
+<extension name="commercemigrationhac"/>
+```
+
+And run the system update. 
+
 
 ## Configuration reference Data Sync
 

@@ -132,6 +132,12 @@ public abstract class AbstractDataRepository implements DataRepository {
     }
 
     @Override
+    public long getRowCountModifiedAfter(String table, Instant time, boolean isDeletionEnabled)
+        throws SQLException {
+        return getRowCountModifiedAfter(table,time);
+    }
+
+    @Override
     public long getRowCountModifiedAfter(String table, Instant time) throws SQLException {
         List<String> conditionsList = new ArrayList<>(1);
         processDefaultConditions(table, conditionsList);
@@ -524,7 +530,7 @@ public abstract class AbstractDataRepository implements DataRepository {
 
     protected abstract String createUniqueColumnsQuery(String tableName);
 
-    private void processDefaultConditions(String table, List<String> conditionsList) {
+    protected void processDefaultConditions(String table, List<String> conditionsList) {
         String tsCondition = getTsCondition(table);
         if (StringUtils.isNotEmpty(tsCondition)) {
             conditionsList.add(tsCondition);

@@ -216,6 +216,12 @@ public class CustomClusterDatabaseCopyScheduler implements DatabaseCopyScheduler
             do {
                 currentState = getCurrentState(context, lastUpdate);
                 lastUpdate = OffsetDateTime.now(ZoneOffset.UTC);
+
+                // setting deletion
+                if(context.getMigrationContext().isDeletionEnabled()){
+                    currentState.setDeletionEnabled(true);
+                }
+
                 logState(currentState);
                 Duration elapsedTillLastUpdate = Duration.between(currentState.getLastUpdate().toInstant(ZoneOffset.UTC), Instant.now());
                 int stalledTimeout = context.getMigrationContext().getStalledTimeout();

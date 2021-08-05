@@ -10,6 +10,8 @@
  */
 package org.sap.commercemigration.jobs;
 
+import de.hybris.platform.core.Registry;
+import de.hybris.platform.cronjob.jalo.CronJob;
 import de.hybris.platform.cronjob.model.CronJobModel;
 import de.hybris.platform.servicelayer.cronjob.AbstractJobPerformable;
 import de.hybris.platform.servicelayer.cronjob.CronJobService;
@@ -56,32 +58,19 @@ public abstract class AbstractMigrationJobPerformable extends AbstractJobPerform
     protected String currentMigrationId;
     private  JdbcTemplate jdbcTemplate;
 
-    protected void doPoll(CronJobModel cronJobModel) {
-        MigrationStatus currentState;
-        try {
-            do {
-                currentState = databaseMigrationService.getMigrationState(incrementalMigrationContext, this.currentMigrationId);
-                LOG.info("{} is running , {}/{} tables migrated. {} failed. State: {}",cronJobModel.getCode(), currentState.getCompletedTasks(),
-                        currentState.getTotalTasks(), currentState.getFailedTasks(), currentState.getStatus());
-
-                Thread.sleep(5000);
-
-            } while (!currentState.isCompleted());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    protected void checkRunningOrRestartedCronJobs(CronJobModel cronJobModel) {
-        getCronJobService().getRunningOrRestartedCronJobs().forEach(cronJob ->
-        {
+    @Override
+    public boolean isPerformable()
+    {
+        for(CronJobModel cronJob : getCronJobService().getRunningOrRestartedCronJobs()){
             if ((cronJob instanceof IncrementalMigrationCronJobModel
-                    || cronJob instanceof FullMigrationCronJobModel)
-                    && !StringUtils.equals(cronJob.getCode(), cronJobModel.getCode())) {
-                throw new IllegalStateException("Previous migrations job already running " + cronJob.getCode());
+                || cronJob instanceof FullMigrationCronJobModel)) {
+                LOG.info("Previous migrations job already running {} and Type {} ", cronJob.getCode(), cronJob.getItemtype());
+                return false;
             }
-        });
+        }
+        return true;
     }
+
 
     protected void updateTypesystemTable(Set<String> migrationItems) throws Exception {
         for(final String tableName: migrationItems){

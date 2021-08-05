@@ -46,6 +46,8 @@ public interface DataRepository {
 
     long getRowCount(String table) throws Exception;
 
+    long getRowCountModifiedAfter(String table, Instant time, boolean isDeletionEnabled) throws SQLException;
+    
     long getRowCountModifiedAfter(String table, Instant time) throws SQLException;
 
     DataSet getAll(String table) throws Exception;

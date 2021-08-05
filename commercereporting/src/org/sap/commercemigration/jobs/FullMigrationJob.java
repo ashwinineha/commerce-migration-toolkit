@@ -3,6 +3,7 @@
  */
 package org.sap.commercemigration.jobs;
 
+import com.google.common.base.Preconditions;
 import de.hybris.platform.cronjob.enums.CronJobResult;
 import de.hybris.platform.cronjob.enums.CronJobStatus;
 import de.hybris.platform.cronjob.model.CronJobModel;
@@ -25,31 +26,36 @@ public class FullMigrationJob extends AbstractMigrationJobPerformable {
   public PerformResult perform(final CronJobModel cronJobModel) {
     FullMigrationCronJobModel fullMigrationCronJobModel;
 
-    if (cronJobModel instanceof FullMigrationCronJobModel) {
-      fullMigrationCronJobModel = (FullMigrationCronJobModel) cronJobModel;
-    } else {
-      throw new IllegalStateException("Wrong cronJob Model " + cronJobModel.getCode());
-    }
+    Preconditions
+        .checkState((cronJobModel instanceof FullMigrationCronJobModel),
+            "cronJobModel must the instance of FullMigrationCronJobModel");
+    fullMigrationCronJobModel = (FullMigrationCronJobModel) cronJobModel;
+    Preconditions.checkNotNull(fullMigrationCronJobModel.getMigrationItems(),
+        "We expect at least one table for the full migration");
+    Preconditions.checkState(
+        null != fullMigrationCronJobModel.getMigrationItems() && !fullMigrationCronJobModel
+            .getMigrationItems().isEmpty(),
+        "We expect at least one table for the full migration");
+
     boolean caughtExeption = false;
     try {
-      checkRunningOrRestartedCronJobs(fullMigrationCronJobModel);
 
       if (CollectionUtils.isNotEmpty(fullMigrationCronJobModel.getMigrationItems())) {
-        this.incrementalMigrationContext
+        incrementalMigrationContext
             .setIncludedTables(fullMigrationCronJobModel.getMigrationItems());
         updateTypesystemTable(fullMigrationCronJobModel.getMigrationItems());
       }
       incrementalMigrationContext.setDeletionEnabled(false);
-      this.incrementalMigrationContext
+      incrementalMigrationContext
           .setTruncateEnabled(fullMigrationCronJobModel.isTruncateEnabled());
-      this.incrementalMigrationContext
+      incrementalMigrationContext
           .setSchemaMigrationAutoTriggerEnabled(fullMigrationCronJobModel.isSchemaAutotrigger());
-      this.incrementalMigrationContext.setIncrementalModeEnabled(false);
-      this.currentMigrationId = databaseMigrationService
-          .startMigration(this.incrementalMigrationContext);
+      incrementalMigrationContext.setIncrementalModeEnabled(false);
+      currentMigrationId = databaseMigrationService
+          .startMigration(incrementalMigrationContext);
 
       MigrationStatus currentState = databaseMigrationService
-          .waitForFinish(this.incrementalMigrationContext, this.currentMigrationId);
+          .waitForFinish(incrementalMigrationContext, currentMigrationId);
 
     } catch (final Exception e) {
       caughtExeption = true;

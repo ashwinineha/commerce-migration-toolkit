@@ -277,7 +277,7 @@ public class CopyPipeWriterStrategy implements PipeWriterStrategy<DataSet> {
         return sqlBuilder.toString();
     }
 
-    private String getBulkDeleteStatement(String targetTableName, List<String> columnsToCopy, String columnId) {
+    private String getBulkDeleteStatement(String targetTableName, String columnId) {
         /*
          * https://michaeljswart.com/2017/07/sql-server-upsert-patterns-and-antipatterns/
          * We are not using a stored procedure here as CCv2 does not grant sp exec permission to the default db user
@@ -285,7 +285,7 @@ public class CopyPipeWriterStrategy implements PipeWriterStrategy<DataSet> {
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append(String.format("MERGE %s WITH (HOLDLOCK) AS t", targetTableName));
         sqlBuilder.append("\n");
-        sqlBuilder.append(String.format("USING (SELECT %s) AS s ON t.%s = s.%s", Joiner.on(',').join(columnsToCopy.stream().map(column -> "? " + column).collect(Collectors.toList())), columnId, columnId));
+        sqlBuilder.append(String.format("USING (SELECT %s) AS s ON t.%s = s.%s",  "? " + columnId, columnId, columnId));
         sqlBuilder.append("\n");
         sqlBuilder.append("WHEN MATCHED THEN DELETE"); //DELETE
         sqlBuilder.append(";");
@@ -318,17 +318,23 @@ public class CopyPipeWriterStrategy implements PipeWriterStrategy<DataSet> {
 
     private RetriableTask createWriterTask(DataWriterContext dwc) {
         MigrationContext ctx = dwc.getContext().getMigrationContext();
-        if (!ctx.isBulkCopyEnabled()) {
-            return new DataWriterTask(dwc);
+        if(ctx.isDeletionEnabled()){
+          return new DataDeleteWriterTask(dwc);
         } else {
-            boolean noNullification = dwc.getNullifyColumns().isEmpty();
-            boolean noIncremental = !ctx.isIncrementalModeEnabled();
-            boolean noColumnOverride = !isColumnOverride(dwc.getContext(), dwc.getCopyItem());
-            if (noNullification && noIncremental && noColumnOverride) {
-                LOG.warn("EXPERIMENTAL: Using bulk copy for {}", dwc.getCopyItem().getTargetItem());
-                return new DataBulkWriterTask(dwc);
-            } else {
+
+            if (!ctx.isBulkCopyEnabled()) {
                 return new DataWriterTask(dwc);
+            } else {
+                boolean noNullification = dwc.getNullifyColumns().isEmpty();
+                boolean noIncremental = !ctx.isIncrementalModeEnabled();
+                boolean noColumnOverride = !isColumnOverride(dwc.getContext(), dwc.getCopyItem());
+                if (noNullification && noIncremental && noColumnOverride) {
+                    LOG.warn("EXPERIMENTAL: Using bulk copy for {}",
+                        dwc.getCopyItem().getTargetItem());
+                    return new DataBulkWriterTask(dwc);
+                } else {
+                    return new DataWriterTask(dwc);
+                }
             }
         }
     }
@@ -406,12 +412,7 @@ public class CopyPipeWriterStrategy implements PipeWriterStrategy<DataSet> {
         protected Boolean internalRun() {
             try {
                 if (!ctx.getDataSet().getAllResults().isEmpty()) {
-                    if(ctx.getContext().getMigrationContext().isDeletionEnabled()){
-                        deleteProcess();
-                    }
-                    else{
                         process();
-                    }
                 }
                 return Boolean.TRUE;
             } catch (Exception e) {
@@ -466,98 +467,6 @@ public class CopyPipeWriterStrategy implements PipeWriterStrategy<DataSet> {
                     long totalCount = ctx.getTotalCount().addAndGet(batchCount);
                     updateProgress(ctx.getContext(), ctx.getCopyItem(), totalCount);
                 }
-            } catch (Exception e) {
-                if (connection != null) {
-                    connection.rollback();
-                }
-                throw e;
-            } finally {
-                if (connection != null && originalAutoCommit != null) {
-                    connection.setAutoCommit(originalAutoCommit);
-                }
-                if (connection != null && ctx != null) {
-                    if (requiresIdentityInsert) {
-                        switchIdentityInsert(connection, ctx.getCopyItem().getTargetItem(), false);
-                    }
-                    connection.close();
-                }
-            }
-        }
-
-        private List<String> getListColumn() {
-            final String columns = "PK";
-            if (StringUtils.isEmpty(columns)) {
-                return Collections.emptyList();
-            }
-            List<String> result = Splitter.on(",")
-                .omitEmptyStrings()
-                .trimResults()
-                .splitToList(columns);
-
-            return result;
-        }
-
-        // It will be executed during deelte process
-        private void deleteProcess() throws Exception {
-            Connection connection = null;
-            Boolean originalAutoCommit = null;
-            String p_table = "p_table";
-            String PK = "PK";
-            String p_itempk = "p_itempk";
-            List<Long> pkList;
-            boolean requiresIdentityInsert = ctx.isRequiresIdentityInsert();
-
-            Map<String, List<Long>> deleteTablePKList = new HashMap<String, List<Long>>();
-
-            for (List<Object> row : ctx.getDataSet().getAllResults()) {
-                String tableName = (String) ctx.getDataSet()
-                    .getColumnValue(p_table, row);
-
-                if (deleteTablePKList.containsKey(tableName)) {
-                    pkList = deleteTablePKList.get(tableName);
-                    Long pkValue = (Long) ctx.getDataSet()
-                        .getColumnValue(p_itempk, row);
-                    pkList.add(pkValue);
-                    deleteTablePKList.put(tableName, pkList);
-                } else {
-                    pkList = new ArrayList<Long>();
-                    Long pkValue = (Long) ctx.getDataSet()
-                        .getColumnValue(p_itempk, row);
-                    pkList.add(pkValue);
-                    deleteTablePKList.put(tableName, pkList);
-                }
-                LOG.info(deleteTablePKList.toString());
-            }
-            try {
-
-                connection = ctx.getContext().getMigrationContext().getDataTargetRepository()
-                    .getConnection();
-                originalAutoCommit = connection.getAutoCommit();
-
-                for (Map.Entry<String, List<Long>> entry : deleteTablePKList.entrySet()) {
-                    String targetTableName = entry.getKey();
-
-                try (PreparedStatement bulkWriterStatement = connection.prepareStatement(
-                    getBulkDeleteStatement(targetTableName, getListColumn(), PK));
-                ) {
-                    connection.setAutoCommit(false);
-                    for (Long pkValue : entry.getValue()) {
-                        int paramIdx = 1;
-                            bulkWriterStatement.setObject(paramIdx, pkValue);
-
-                            paramIdx += 1;
-                            bulkWriterStatement.addBatch();
-                    }
-                    int batchCount = ctx.getDataSet().getAllResults().size();
-                    executeBatch(ctx.getCopyItem(), bulkWriterStatement, batchCount,
-                        ctx.getPerformanceRecorder());
-                    bulkWriterStatement.clearParameters();
-                    bulkWriterStatement.clearBatch();
-                    connection.commit();
-                    long totalCount = ctx.getTotalCount().addAndGet(batchCount);
-                    updateProgress(ctx.getContext(), ctx.getCopyItem(), totalCount);
-                }
-            }
             } catch (Exception e) {
                 if (connection != null) {
                     connection.rollback();
@@ -642,6 +551,90 @@ public class CopyPipeWriterStrategy implements PipeWriterStrategy<DataSet> {
                 }
             }
         }
+    }
+
+    private class DataDeleteWriterTask extends RetriableTask  {
+
+        private DataWriterContext ctx;
+
+        public DataDeleteWriterTask(DataWriterContext ctx) {
+        super(ctx.getContext(), ctx.getCopyItem().getTargetItem());
+        this.ctx = ctx;
+    }
+
+        @Override
+        protected Boolean internalRun() {
+        try {
+            if (!ctx.getDataSet().getAllResults().isEmpty()) {
+                if(ctx.getContext().getMigrationContext().isDeletionEnabled()){
+                    process();
+                }
+            }
+            return Boolean.TRUE;
+        } catch (Exception e) {
+            //LOG.error("Error while executing table task " + ctx.getCopyItem().getTargetItem(),e);
+            throw new RuntimeException("Error processing writer task for " + ctx.getCopyItem().getTargetItem(), e);
+        }
+    }
+
+        private void process() throws Exception {
+        Connection connection = null;
+        Boolean originalAutoCommit = null;
+        String PK = "PK";
+        boolean requiresIdentityInsert = ctx.isRequiresIdentityInsert();
+        try {
+            connection = ctx.getContext().getMigrationContext().getDataTargetRepository().getConnection();
+            originalAutoCommit = connection.getAutoCommit();
+            try (PreparedStatement bulkWriterStatement = connection.prepareStatement(
+                getBulkDeleteStatement(ctx.getCopyItem().getTargetItem() , PK));) {
+                connection.setAutoCommit(false);
+                for (List<Object> row : ctx.getDataSet().getAllResults()) {
+                    int paramIdx = 1;
+                    Long pkValue = (Long) ctx.getDataSet()
+                        .getColumnValue("p_itempk", row);
+                    bulkWriterStatement.setObject(paramIdx, pkValue);
+
+                    paramIdx += 1;
+                    bulkWriterStatement.addBatch();
+                }
+                int batchCount = ctx.getDataSet().getAllResults().size();
+                executeBatch(ctx.getCopyItem(), bulkWriterStatement, batchCount, ctx.getPerformanceRecorder());
+                bulkWriterStatement.clearParameters();
+                bulkWriterStatement.clearBatch();
+                connection.commit();
+                long totalCount = ctx.getTotalCount().addAndGet(batchCount);
+                updateProgress(ctx.getContext(), ctx.getCopyItem(), totalCount);
+            }
+        } catch (Exception e) {
+            if (connection != null) {
+                connection.rollback();
+            }
+            throw e;
+        } finally {
+            if (connection != null && originalAutoCommit != null) {
+                connection.setAutoCommit(originalAutoCommit);
+            }
+            if (connection != null && ctx != null) {
+                if (requiresIdentityInsert) {
+                    switchIdentityInsert(connection, ctx.getCopyItem().getTargetItem(), false);
+                }
+                connection.close();
+            }
+        }
+    }
+
+        private List<String> getListColumn() {
+        final String columns = "PK";
+        if (StringUtils.isEmpty(columns)) {
+            return Collections.emptyList();
+        }
+        List<String> result = Splitter.on(",")
+            .omitEmptyStrings()
+            .trimResults()
+            .splitToList(columns);
+
+        return result;
+    }
     }
 
 }

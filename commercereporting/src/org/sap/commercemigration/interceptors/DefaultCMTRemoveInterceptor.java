@@ -52,9 +52,10 @@ public class DefaultCMTRemoveInterceptor implements RemoveInterceptor<ItemModel>
 
       ItemDeletionMarkerModel idm = null;
       try {
-        LOG.info(
-            String.valueOf(typeService.getComposedTypeForCode(model.getItemtype()).getTable()));
-        LOG.info("inside remove DefaultCMTRemoveInterceptor" + model.getPk());
+        if(LOG.isDebugEnabled()){
+          LOG.info("inside remove DefaultCMTRemoveInterceptor for" + String
+              .valueOf(typeService.getComposedTypeForCode(model.getItemtype()).getTable()));
+        }
 
         idm = modelService.create(ItemDeletionMarkerModel.class);
         fillInitialDeletionMarker(idm, model.getPk().getLong(),
@@ -83,7 +84,7 @@ public class DefaultCMTRemoveInterceptor implements RemoveInterceptor<ItemModel>
     marker.setChangeType(ItemChangeType.DELETED);
   }
 
-  private static List<String> getListDeletionsItemType() {
+  private  List<String> getListDeletionsItemType() {
     final String tables = Config.getString(
         CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_DELETIONS_ITEMTYPE, "");
     if (StringUtils.isEmpty(tables)) {

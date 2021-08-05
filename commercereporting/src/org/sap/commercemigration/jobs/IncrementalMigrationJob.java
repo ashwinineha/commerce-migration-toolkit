@@ -3,15 +3,22 @@
  */
 package org.sap.commercemigration.jobs;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 import de.hybris.platform.cronjob.enums.CronJobResult;
 import de.hybris.platform.cronjob.enums.CronJobStatus;
 import de.hybris.platform.cronjob.model.CronJobModel;
 import de.hybris.platform.servicelayer.cronjob.PerformResult;
+import de.hybris.platform.servicelayer.type.TypeService;
 import de.hybris.platform.util.Config;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.sap.commercemigration.MigrationStatus;
 import org.sap.commercemigration.constants.CommercereportingConstants;
 import org.sap.commercemigration.model.cron.IncrementalMigrationCronJobModel;
@@ -26,28 +33,33 @@ public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
 
   private static final Logger LOG = LoggerFactory.getLogger(IncrementalMigrationJob.class);
 
+  @Resource(name = "typeService")
+  private TypeService typeService;
+
   @Override
   public PerformResult perform(final CronJobModel cronJobModel) {
     IncrementalMigrationCronJobModel incrementalMigrationCronJob;
 
-    if (cronJobModel instanceof IncrementalMigrationCronJobModel) {
-      incrementalMigrationCronJob = (IncrementalMigrationCronJobModel) cronJobModel;
-    } else {
-      throw new IllegalStateException("Wrong cronJob Model " + cronJobModel.getCode());
-    }
+    Preconditions
+        .checkState((cronJobModel instanceof IncrementalMigrationCronJobModel),
+            "cronJobModel must the instance of FullMigrationCronJobModel");
 
-    boolean isDeletionsEnabled = Config
-        .getBoolean(CommercereportingConstants.MIGRATION_DATA_DELETION_ENABLED, true);
-    String deletionTable = Config
-        .getString(CommercereportingConstants.MIGRATION_DATA_DELETION_TABLE, "itemdeletionmarkers");
-    final Set<String> deletionTableSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    incrementalMigrationCronJob = (IncrementalMigrationCronJobModel) cronJobModel;
+    Preconditions.checkState(
+        null != incrementalMigrationCronJob.getMigrationItems() && !incrementalMigrationCronJob
+            .getMigrationItems().isEmpty(),
+        "We expect at least one table for the incremental migration");
+
+    boolean isIncRemoveEnabled = Config
+        .getBoolean(CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_REMOVE_ENABLED, true);
+
+    final Set<String> deletionTableSet = getDeletionTableSet(incrementalMigrationCronJob.getMigrationItems());
 
     MigrationStatus currentState;
 
-
+    String currentMigrationId;
     boolean caughtExeption = false;
     try {
-      checkRunningOrRestartedCronJobs(incrementalMigrationCronJob);
 
       if (null != incrementalMigrationCronJob.getLastStartTime()) {
         Instant timeStampInstant = incrementalMigrationCronJob.getLastStartTime().toInstant();
@@ -57,12 +69,13 @@ public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
         }
         incrementalMigrationContext.setIncrementalMigrationTimestamp(timeStampInstant);
       }
-      this.incrementalMigrationContext
-          .setTruncateEnabled(incrementalMigrationCronJob.isTruncateEnabled());
       this.incrementalMigrationContext.setIncrementalModeEnabled(true);
+
+      incrementalMigrationContext
+          .setTruncateEnabled(false);
       // if deletion enabled
-      if (isDeletionsEnabled) {
-        deletionTableSet.add(deletionTable);
+      if (isIncRemoveEnabled && CollectionUtils.isNotEmpty(deletionTableSet)) {
+      //  deletionTableSet.add(deletionTable);
         this.incrementalMigrationContext
             .setSchemaMigrationAutoTriggerEnabled(false);
 
@@ -70,25 +83,26 @@ public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
             .setIncrementalTables(deletionTableSet);
         incrementalMigrationContext.setDeletionEnabled(true);
 
-        this.currentMigrationId = databaseMigrationService
+        currentMigrationId = databaseMigrationService
             .startMigration(incrementalMigrationContext);
 
          currentState = databaseMigrationService
-            .waitForFinish(this.incrementalMigrationContext, this.currentMigrationId);
+            .waitForFinish(this.incrementalMigrationContext, currentMigrationId);
       }
 
       incrementalMigrationContext.setDeletionEnabled(false);
-
       if (CollectionUtils.isNotEmpty(incrementalMigrationCronJob.getMigrationItems())) {
         incrementalMigrationContext
             .setIncrementalTables(incrementalMigrationCronJob.getMigrationItems());
       }
       this.incrementalMigrationContext
           .setSchemaMigrationAutoTriggerEnabled(incrementalMigrationCronJob.isSchemaAutotrigger());
-      this.currentMigrationId = databaseMigrationService
+
+      currentMigrationId = databaseMigrationService
           .startMigration(incrementalMigrationContext);
+
        currentState = databaseMigrationService
-          .waitForFinish(this.incrementalMigrationContext, this.currentMigrationId);
+          .waitForFinish(this.incrementalMigrationContext, currentMigrationId);
     } catch (final Exception e) {
       caughtExeption = true;
       LOG.error("Exception caught:", e);
@@ -100,6 +114,30 @@ public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
 
     return new PerformResult(caughtExeption ? CronJobResult.FAILURE : CronJobResult.SUCCESS,
         CronJobStatus.FINISHED);
+  }
+
+  private Set<String> getDeletionTableSet(Set<String> incMigrationItems) {
+    String deletionTable = Config
+        .getString(CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_DELETIONS_ITEMTYPE, "");
+    if (StringUtils.isEmpty(deletionTable)) {
+      return Collections.emptySet();
+    }
+
+    final Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+
+    final List<String> tablesArray = Splitter.on(",")
+        .omitEmptyStrings()
+        .trimResults()
+        .splitToList(deletionTable.toLowerCase());
+
+    String tableName;
+    for(String itemType : tablesArray){
+      tableName = typeService.getComposedTypeForCode(itemType).getTable();
+      if(incMigrationItems.contains(tableName)){
+        result.add(typeService.getComposedTypeForCode(itemType).getTable());
+      }
+    }
+    return result;
   }
 
 }

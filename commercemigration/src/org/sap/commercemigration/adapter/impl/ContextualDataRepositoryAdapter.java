@@ -25,10 +25,15 @@ public class ContextualDataRepositoryAdapter implements DataRepositoryAdapter {
 
     @Override
     public long getRowCount(MigrationContext context, String table) throws Exception {
+        if(context.isDeletionEnabled()){
+            return repository.getRowCountModifiedAfter(table, getIncrementalTimestamp(context),context.isDeletionEnabled());
+        }
+        else{
         if (context.isIncrementalModeEnabled()) {
             return repository.getRowCountModifiedAfter(table, getIncrementalTimestamp(context));
         } else {
             return repository.getRowCount(table);
+        }
         }
     }
 

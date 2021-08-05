@@ -124,6 +124,7 @@ public class DefaultDataPipeFactory implements DataPipeFactory<DataSet> {
                 queryDefinition.setTable(table);
                 queryDefinition.setColumn(batchColumn);
                 queryDefinition.setBatchSize(pageSize);
+                queryDefinition.setDeletionEnabled(context.getMigrationContext().isDeletionEnabled());
                 DataSet batchMarkers = dataRepositoryAdapter.getBatchMarkersOrderedByColumn(context.getMigrationContext(), queryDefinition);
                 List<List<Object>> batchMarkersList = batchMarkers.getAllResults();
                 if (batchMarkersList.isEmpty()) {
@@ -212,6 +213,7 @@ public class DefaultDataPipeFactory implements DataPipeFactory<DataSet> {
             queryDefinition.setAllColumns(batchColumns);
             queryDefinition.setBatchSize(pageSize);
             queryDefinition.setOffset(offset);
+            queryDefinition.setDeletionEnabled(context.getMigrationContext().isDeletionEnabled());
             DataSet result = adapter.getBatchWithoutIdentifier(context.getMigrationContext(), queryDefinition);
             getPipeTaskContext().getRecorder().record(PerformanceUnit.ROWS, result.getAllResults().size());
             getPipeTaskContext().getPipe().put(MaybeFinished.of(result));
@@ -253,6 +255,7 @@ public class DefaultDataPipeFactory implements DataPipeFactory<DataSet> {
             queryDefinition.setLastColumnValue(lastValue);
             queryDefinition.setNextColumnValue(nextValue.orElseGet(() -> null));
             queryDefinition.setBatchSize(pageSize);
+            queryDefinition.setDeletionEnabled(ctx.getMigrationContext().isDeletionEnabled());
             DataSet page = adapter.getBatchOrderedByColumn(ctx.getMigrationContext(), queryDefinition);
             getPipeTaskContext().getRecorder().record(PerformanceUnit.ROWS, pageSize);
             getPipeTaskContext().getPipe().put(MaybeFinished.of(page));
