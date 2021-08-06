@@ -118,7 +118,7 @@ public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
 
   private Set<String> getDeletionTableSet(Set<String> incMigrationItems) {
     String deletionTable = Config
-        .getString(CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_DELETIONS_ITEMTYPE, "");
+        .getString(CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_DELETIONS_ITEMTYPES, "");
     if (StringUtils.isEmpty(deletionTable)) {
       return Collections.emptySet();
     }

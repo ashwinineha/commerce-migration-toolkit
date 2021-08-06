@@ -9,7 +9,7 @@ package org.sap.commercemigration.constants;
 public final class CommercereportingConstants extends GeneratedCommercereportingConstants
 {
 	public static final String EXTENSIONNAME = "commercereporting";
-	public static final String MIGRATION_DATA_INCREMENTAL_DELETIONS_ITEMTYPE = "migration.data.incremental.deletions.itemtype";
+	public static final String MIGRATION_DATA_INCREMENTAL_DELETIONS_ITEMTYPES = "migration.data.incremental.deletions.itemtypes";
 	public static final String MIGRATION_DATA_INCREMENTAL_REMOVE_ENABLED = "migration.data.incremental.remove.enabled";
 	public static final String MIGRATION_DATA_DELETION_ENABLED = "migration.data.incremental.deletions.enabled";
 	public static final String MIGRATION_DATA_DELETION_TABLE = "migration.data.incremental.deletions.table";

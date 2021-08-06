@@ -23,6 +23,8 @@ public class DefaultCMTRemoveInterceptor implements RemoveInterceptor<ItemModel>
 
   private static final Logger LOG = LoggerFactory.getLogger(DefaultCMTRemoveInterceptor.class);
 
+  private static final boolean removeEnabled = Config.getBoolean(CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_REMOVE_ENABLED,true);
+
   private static final String COMMA_SEPERATOR = ",";
 
   private ModelService modelService;
@@ -30,7 +32,6 @@ public class DefaultCMTRemoveInterceptor implements RemoveInterceptor<ItemModel>
 
   @Override
   public void onRemove(@Nonnull final ItemModel model, @Nonnull final InterceptorContext ctx) {
-    boolean removeEnabled = Config.getBoolean(CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_REMOVE_ENABLED,true);
 
     if (!removeEnabled ) {
       if (LOG.isDebugEnabled()) {
@@ -85,15 +86,16 @@ public class DefaultCMTRemoveInterceptor implements RemoveInterceptor<ItemModel>
   }
 
   private  List<String> getListDeletionsItemType() {
-    final String tables = Config.getString(
-        CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_DELETIONS_ITEMTYPE, "");
-    if (StringUtils.isEmpty(tables)) {
+    // TO DO change to static variable
+    final String itemTypes = Config.getString(
+        CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_DELETIONS_ITEMTYPES, "");
+    if (StringUtils.isEmpty(itemTypes)) {
       return Collections.emptyList();
     }
     List<String> result = Splitter.on(COMMA_SEPERATOR)
         .omitEmptyStrings()
         .trimResults()
-        .splitToList(tables.toLowerCase());
+        .splitToList(itemTypes.toLowerCase());
 
     return result;
   }
