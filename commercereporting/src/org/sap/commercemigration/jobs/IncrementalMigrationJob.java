@@ -8,6 +8,7 @@ import com.google.common.base.Splitter;
 import de.hybris.platform.cronjob.enums.CronJobResult;
 import de.hybris.platform.cronjob.enums.CronJobStatus;
 import de.hybris.platform.cronjob.model.CronJobModel;
+import de.hybris.platform.jalo.type.TypeManager;
 import de.hybris.platform.servicelayer.cronjob.PerformResult;
 import de.hybris.platform.servicelayer.type.TypeService;
 import de.hybris.platform.util.Config;
@@ -50,9 +51,6 @@ public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
             .getMigrationItems().isEmpty(),
         "We expect at least one table for the incremental migration");
 
-    boolean isIncRemoveEnabled = Config
-        .getBoolean(CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_REMOVE_ENABLED, true);
-
     final Set<String> deletionTableSet = getDeletionTableSet(incrementalMigrationCronJob.getMigrationItems());
 
     MigrationStatus currentState;
@@ -74,7 +72,7 @@ public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
       incrementalMigrationContext
           .setTruncateEnabled(false);
       // if deletion enabled
-      if (isIncRemoveEnabled && CollectionUtils.isNotEmpty(deletionTableSet)) {
+      if (CollectionUtils.isNotEmpty(deletionTableSet)) {
       //  deletionTableSet.add(deletionTable);
         this.incrementalMigrationContext
             .setSchemaMigrationAutoTriggerEnabled(false);
@@ -116,28 +114,66 @@ public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
         CronJobStatus.FINISHED);
   }
 
-  private Set<String> getDeletionTableSet(Set<String> incMigrationItems) {
-    String deletionTable = Config
+  private Set<String> getDeletionTableSetFromItemType(Set<String> incMigrationItems) {
+    String deletionItemTypes = Config
         .getString(CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_DELETIONS_ITEMTYPES, "");
-    if (StringUtils.isEmpty(deletionTable)) {
+    if (StringUtils.isEmpty(deletionItemTypes)) {
       return Collections.emptySet();
     }
 
     final Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
-    final List<String> tablesArray = Splitter.on(",")
+    final List<String> itemtypesArray = Splitter.on(",")
         .omitEmptyStrings()
         .trimResults()
-        .splitToList(deletionTable.toLowerCase());
+        .splitToList(deletionItemTypes.toLowerCase());
 
     String tableName;
-    for(String itemType : tablesArray){
+    for(String itemType : itemtypesArray){
       tableName = typeService.getComposedTypeForCode(itemType).getTable();
       if(incMigrationItems.contains(tableName)){
-        result.add(typeService.getComposedTypeForCode(itemType).getTable());
+        result.add(tableName);
       }
     }
     return result;
+  }
+
+  private Set<String> getDeletionTableSetFromTypeCodes(Set<String> incMigrationItems) {
+    String deletionTypecodes = Config
+        .getString(CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_DELETIONS_TYPECODES, "");
+    if (StringUtils.isEmpty(deletionTypecodes)) {
+      return Collections.emptySet();
+    }
+
+    final Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+
+    final List<String> typecodeArray = Splitter.on(",")
+        .omitEmptyStrings()
+        .trimResults()
+        .splitToList(deletionTypecodes.toLowerCase());
+
+    String tableName;
+    for(String typecode : typecodeArray){
+      tableName = TypeManager.getInstance()
+          .getRootComposedType(Integer.valueOf(typecode)).getTable();
+      if(incMigrationItems.contains(tableName)){
+        result.add(tableName);
+      }
+    }
+    return result;
+  }
+
+  // TO do , change to static varriable
+  private Set<String> getDeletionTableSet(Set<String> incMigrationItems){
+    if(Config
+        .getBoolean(CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_DELETIONS_TYPECODES_ENABLED, false)){
+      return getDeletionTableSetFromTypeCodes(incMigrationItems);
+    }
+    else if(Config
+        .getBoolean(CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_DELETIONS_ITEMTYPES_ENABLED, false)){
+      getDeletionTableSetFromItemType(incMigrationItems);
+    }
+     return Collections.emptySet();
   }
 
 }

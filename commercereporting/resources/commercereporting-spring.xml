@@ -38,16 +38,21 @@
     parent="abstractMigrationJobPerformable">
   </bean>
 
-  <bean id="defaultCMTRemoveInterceptor"
-    class="org.sap.commercemigration.interceptors.DefaultCMTRemoveInterceptor">
-    <property name="typeService" ref="typeService" />
-    <property name="modelService" ref="modelService" />
-  </bean>
+<!--  <bean id="defaultCMTRemoveInterceptor"-->
+<!--    class="org.sap.commercemigration.interceptors.DefaultCMTRemoveInterceptor">-->
+<!--    <property name="typeService" ref="typeService" />-->
+<!--    <property name="modelService" ref="modelService" />-->
+<!--  </bean>-->
 
-  <bean id="defaultCMTRemoveInterceptorMapping"
-    class="de.hybris.platform.servicelayer.interceptor.impl.InterceptorMapping">
-    <property name="interceptor" ref="defaultCMTRemoveInterceptor"/>
-    <property name="typeCode" value="Item" />
+<!--  <bean id="defaultCMTRemoveInterceptorMapping"-->
+<!--    class="de.hybris.platform.servicelayer.interceptor.impl.InterceptorMapping">-->
+<!--    <property name="interceptor" ref="defaultCMTRemoveInterceptor"/>-->
+<!--    <property name="typeCode" value="Item" />-->
+<!--  </bean>-->
+
+  <bean id="defaultCMTAfterSaveListener" class="org.sap.commercemigration.listeners.DefaultCMTAfterSaveListener">
+    <property name="modelService" ref="modelService" />
+    <property name="typeService" ref="typeService" />
   </bean>
 
   <alias name="defaultDataRepositoryFactory" alias="dataRepositoryFactory"/>

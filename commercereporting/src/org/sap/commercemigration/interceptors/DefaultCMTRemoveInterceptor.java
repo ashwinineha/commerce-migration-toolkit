@@ -23,7 +23,7 @@ public class DefaultCMTRemoveInterceptor implements RemoveInterceptor<ItemModel>
 
   private static final Logger LOG = LoggerFactory.getLogger(DefaultCMTRemoveInterceptor.class);
 
-  private static final boolean removeEnabled = Config.getBoolean(CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_REMOVE_ENABLED,true);
+  private static final boolean deletionsEnabled = Config.getBoolean(CommercereportingConstants.MIGRATION_DATA_INCREMENTAL_DELETIONS_ITEMTYPES_ENABLED,false);
 
   private static final String COMMA_SEPERATOR = ",";
 
@@ -33,7 +33,7 @@ public class DefaultCMTRemoveInterceptor implements RemoveInterceptor<ItemModel>
   @Override
   public void onRemove(@Nonnull final ItemModel model, @Nonnull final InterceptorContext ctx) {
 
-    if (!removeEnabled ) {
+    if (!deletionsEnabled ) {
       if (LOG.isDebugEnabled()) {
         LOG.debug("CMT deletions is not enabled for ItemModel.");
       }
