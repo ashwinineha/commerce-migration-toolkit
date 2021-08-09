@@ -71,8 +71,8 @@ Remove Interceptor, which will be enabled for the limited ItemTypes and only in 
   migration.data.incremental.deletions.itemtypes.enabled=true
 ```
 * Dedicated item type for deleted records (separate table with PK).
-```aidl
-For now, it is supported through ItemDeletionMarker.
+```
+For now, it is supported by ItemDeletionMarker.
 ```
 * Deletion activity is tied with incremental to avoid duplicates.
 
