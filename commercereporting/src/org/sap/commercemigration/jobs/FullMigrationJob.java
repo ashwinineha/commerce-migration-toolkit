@@ -40,11 +40,11 @@ public class FullMigrationJob extends AbstractMigrationJobPerformable {
     boolean caughtExeption = false;
     try {
 
-      if (CollectionUtils.isNotEmpty(fullMigrationCronJobModel.getMigrationItems())) {
+
         incrementalMigrationContext
             .setIncludedTables(fullMigrationCronJobModel.getMigrationItems());
         updateTypesystemTable(fullMigrationCronJobModel.getMigrationItems());
-      }
+
       incrementalMigrationContext.setDeletionEnabled(false);
       incrementalMigrationContext
           .setTruncateEnabled(fullMigrationCronJobModel.isTruncateEnabled());
