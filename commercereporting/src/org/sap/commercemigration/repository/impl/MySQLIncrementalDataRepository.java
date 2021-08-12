@@ -13,20 +13,19 @@ import java.util.List;
 import org.sap.commercemigration.MarkersQueryDefinition;
 import org.sap.commercemigration.OffsetQueryDefinition;
 import org.sap.commercemigration.SeekQueryDefinition;
-import org.sap.commercemigration.constants.CommercereportingConstants;
 import org.sap.commercemigration.dataset.DataSet;
 import org.sap.commercemigration.profile.DataSourceConfiguration;
 import org.sap.commercemigration.service.DatabaseMigrationDataTypeMapperService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AzureIncrementalDataRepository extends AzureDataRepository{
+public class MySQLIncrementalDataRepository extends MySQLDataRepository{
 
-  private static final Logger LOG = LoggerFactory.getLogger(AzureIncrementalDataRepository.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MySQLIncrementalDataRepository.class);
 
   private static String  deletionTable = Config.getParameter("db.tableprefix") == null ? "" : Config.getParameter("db.tableprefix")+ "itemdeletionmarkers";
 
-  public AzureIncrementalDataRepository(
+  public MySQLIncrementalDataRepository(
       DataSourceConfiguration dataSourceConfiguration,
       DatabaseMigrationDataTypeMapperService databaseMigrationDataTypeMapperService) {
     super(dataSourceConfiguration, databaseMigrationDataTypeMapperService);
@@ -38,7 +37,7 @@ public class AzureIncrementalDataRepository extends AzureDataRepository{
       return super.buildOffsetBatchQuery(queryDefinition,conditions);
     }
     String orderBy = Joiner.on(',').join(queryDefinition.getAllColumns());
-    return String.format("SELECT * FROM %s WHERE %s ORDER BY %s OFFSET %s ROWS FETCH NEXT %s ROWS ONLY", deletionTable, expandConditions(conditions), orderBy, queryDefinition.getOffset(), queryDefinition.getBatchSize());
+    return String.format("select * from %s where %s order by %s limit %s,%s", deletionTable, expandConditions(conditions), orderBy, queryDefinition.getOffset(), queryDefinition.getBatchSize());
   }
 
   @Override
@@ -46,7 +45,7 @@ public class AzureIncrementalDataRepository extends AzureDataRepository{
     if(!queryDefinition.isDeletionEnabled()) {
       return super.buildValueBatchQuery(queryDefinition,conditions);
     }
-    return String.format("select top %s * from %s where %s order by %s", queryDefinition.getBatchSize(), deletionTable, expandConditions(conditions), queryDefinition.getColumn());
+    return String.format("select * from %s where %s order by %s limit %s", deletionTable, expandConditions(conditions), queryDefinition.getColumn(), queryDefinition.getBatchSize());
   }
 
   @Override
@@ -55,24 +54,27 @@ public class AzureIncrementalDataRepository extends AzureDataRepository{
       return super.buildBatchMarkersQuery(queryDefinition,conditions);
     }
     String column = queryDefinition.getColumn();
-    return String.format("SELECT t.%s, t.rownum\n" +
-        "FROM\n" +
-        "(\n" +
-        "    SELECT %s, (ROW_NUMBER() OVER (ORDER BY %s))-1 AS rownum\n" +
-        "    FROM %s\n WHERE %s" +
-        ") AS t\n" +
-        "WHERE t.rownum %% %s = 0\n" +
-        "ORDER BY t.%s", column, column, column, deletionTable, expandConditions(conditions), queryDefinition.getBatchSize(), column);
+    return String.format("SELECT %s,rownum\n" +
+        "FROM ( \n" +
+        "    SELECT \n" +
+        "        @row := @row +1 AS rownum, %s \n" +
+        "    FROM (SELECT @row :=-1) r, %s  WHERE %s ORDER BY %s) ranked \n" +
+        "WHERE rownum %% %s = 0 ", column, column, deletionTable, expandConditions(conditions), column, queryDefinition.getBatchSize());
   }
+
+
+
 
   @Override
   public DataSet getBatchOrderedByColumn(SeekQueryDefinition queryDefinition, Instant time) throws Exception {
+    //
     if(!queryDefinition.isDeletionEnabled()) {
       return super.getBatchOrderedByColumn(queryDefinition,time);
     }
 
     //get batches with modifiedts >= configured time for incremental migration
     List<String> conditionsList = new ArrayList<>(3);
+    processDefaultConditions(queryDefinition.getTable(), conditionsList);
     if (time != null) {
       conditionsList.add("modifiedts > ?");
     }
@@ -109,7 +111,7 @@ public class AzureIncrementalDataRepository extends AzureDataRepository{
     }
     //get batches with modifiedts >= configured time for incremental migration
     List<String> conditionsList = new ArrayList<>(2);
-
+    processDefaultConditions(queryDefinition.getTable(), conditionsList);
     if (time != null) {
       conditionsList.add("modifiedts > ?");
     }
@@ -126,10 +128,11 @@ public class AzureIncrementalDataRepository extends AzureDataRepository{
       }
       // setting table for the deletions
       stmt.setString(2,queryDefinition.getTable());
-
       ResultSet resultSet = stmt.executeQuery();
       return convertToBatchDataSet(resultSet);
     }
+
+
   }
 
   @Override

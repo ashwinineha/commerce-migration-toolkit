@@ -19,7 +19,7 @@ public class DataIncrementalRepositoryFactory extends DataRepositoryFactory {
         } else {
             String connectionStringLower = connectionString.toLowerCase();
             if (connectionStringLower.startsWith("jdbc:mysql")) {
-                return new MySQLDataRepository(dataSourceConfiguration, databaseMigrationDataTypeMapperService);
+                return new MySQLIncrementalDataRepository(dataSourceConfiguration, databaseMigrationDataTypeMapperService);
             } else if (connectionStringLower.startsWith("jdbc:sqlserver")) {
                 return new AzureIncrementalDataRepository(dataSourceConfiguration, databaseMigrationDataTypeMapperService);
             } else if (connectionStringLower.startsWith("jdbc:oracle")) {

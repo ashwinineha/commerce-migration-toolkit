@@ -5,6 +5,7 @@ package org.sap.commercemigration.jobs;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
+import de.hybris.platform.core.Tenant;
 import de.hybris.platform.cronjob.enums.CronJobResult;
 import de.hybris.platform.cronjob.enums.CronJobStatus;
 import de.hybris.platform.cronjob.model.CronJobModel;
@@ -39,6 +40,8 @@ import org.slf4j.LoggerFactory;
 public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
 
   private static final Logger LOG = LoggerFactory.getLogger(IncrementalMigrationJob.class);
+
+  private static String  tablePrefix = Config.getParameter("db.tableprefix") == null ? "" : Config.getParameter("db.tableprefix");
 
   private static final String TABLE_EXISTS_SELECT_STATEMENT = "SELECT TABLE_NAME \n" +
       "  FROM INFORMATION_SCHEMA.TABLES \n" +
@@ -147,6 +150,10 @@ public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
     String tableName;
     for(String itemType : itemtypesArray){
       tableName = typeService.getComposedTypeForCode(itemType).getTable();
+
+      if(StringUtils.startsWith(tableName,tablePrefix)){
+        tableName = StringUtils.removeStart(tableName,tablePrefix);
+      }
       if(incMigrationItems.contains(tableName)){
         result.add(tableName);
       }
@@ -172,6 +179,10 @@ public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
     for(String typecode : typecodeArray){
       tableName = TypeManager.getInstance()
           .getRootComposedType(Integer.valueOf(typecode)).getTable();
+
+      if(StringUtils.startsWith(tableName,tablePrefix)){
+        tableName = StringUtils.removeStart(tableName,tablePrefix);
+      }
       if(incMigrationItems.contains(tableName)){
         result.add(tableName);
       }
@@ -192,7 +203,8 @@ public class IncrementalMigrationJob extends AbstractMigrationJobPerformable {
      return Collections.emptySet();
   }
 
-  protected boolean isSchemaMigrationRequired(Set<String> deletionTableSet) throws Exception {
+
+  private boolean isSchemaMigrationRequired(Set<String> deletionTableSet) throws Exception {
     try (
         Connection connection = incrementalMigrationContext.getDataTargetRepository()
             .getConnection();
